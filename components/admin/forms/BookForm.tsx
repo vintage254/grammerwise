@@ -21,6 +21,7 @@ import FileUpload from "@/components/FileUpload";
 import ColorPicker from "@/components/admin/ColorPicker";
 import { createBook } from "@/lib/admin/actions/book";
 import { toast } from "@/hooks/use-toast";
+import { Book } from "@/types";
 
 interface Props extends Partial<Book> {
   type?: "create" | "update";
@@ -51,7 +52,7 @@ const BookForm = ({ type, ...book }: Props) => {
     if (result.success) {
       toast({
         title: "Success",
-        description: "Book created successfully",
+        description: "Job created successfully",
       });
 
       router.push(`/admin/books/${result.data.id}`);
@@ -73,12 +74,12 @@ const BookForm = ({ type, ...book }: Props) => {
           render={({ field }) => (
             <FormItem className="flex flex-col gap-1">
               <FormLabel className="text-base font-normal text-dark-500">
-                Book Title
+                Job Title
               </FormLabel>
               <FormControl>
                 <Input
                   required
-                  placeholder="Book title"
+                  placeholder="Job title"
                   {...field}
                   className="book-form_input"
                 />

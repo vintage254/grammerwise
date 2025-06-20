@@ -22,6 +22,34 @@
       "when": 1750155001143,
       "tag": "0002_handy_sandman",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1750402228549,
+      "tag": "0003_loving_lucky_pierre",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1750422808153,
+      "tag": "0004_lying_roxanne_simpson",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1750423107148,
+      "tag": "0005_woozy_bug",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1750423602834,
+      "tag": "0006_flippant_the_leader",
+      "breakpoints": true
     }
   ]
 }

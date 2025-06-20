@@ -26,10 +26,22 @@ export const sendEmail = async ({
       provider: resend({ token: config.env.resendToken }),
     },
     body: {
-      from: "grammerwise",
+      from: "grammerwise support<support@grammerwise.com>",
       to: [email],
       subject,
       html: message,
     },
+  });
+};
+
+export const triggerTutorStatusWorkflow = async (payload: {
+  type: "APPROVAL" | "REJECTION";
+  email: string;
+  fullName: string;
+  reason?: string;
+}) => {
+  await qstashClient.publishJSON({
+    url: `${config.env.apiEndpoint}/api/workflows/tutor-status`,
+    body: payload,
   });
 };

@@ -24,7 +24,7 @@ const bebasNeue = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "GrammerWise",
+  title: "GrammarWise",
   description:
     "Unlock Global Opportunities with English",
 };

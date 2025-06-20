@@ -16,7 +16,7 @@ const {
 
 const authenticator = async () => {
   try {
-    const response = await fetch(`${config.env.apiEndpoint}/api/auth/imagekit`);
+    const response = await fetch('/api/imagekit');
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -56,9 +56,7 @@ const FileUpload = ({
   value,
 }: Props) => {
   const ikUploadRef = useRef(null);
-  const [file, setFile] = useState<{ filePath: string | null }>({
-    filePath: value ?? null,
-  });
+  const [fileUrl, setFileUrl] = useState<string | null>(value ?? null);
   const [progress, setProgress] = useState(0);
 
   const styles = {
@@ -81,12 +79,12 @@ const FileUpload = ({
   };
 
   const onSuccess = (res: any) => {
-    setFile(res);
-    onFileChange(res.filePath);
+    setFileUrl(res.url);
+    onFileChange(res.url);
 
     toast({
       title: `${type} uploaded successfully`,
-      description: `${res.filePath} uploaded successfully!`,
+      description: `File uploaded successfully!`,
     });
   };
 
@@ -159,8 +157,8 @@ const FileUpload = ({
 
         <p className={cn("text-base", styles.placeholder)}>{placeholder}</p>
 
-        {file && (
-          <p className={cn("upload-filename", styles.text)}>{file.filePath}</p>
+        {fileUrl && (
+          <p className={cn("upload-filename", styles.text)}>{fileUrl.split('/').pop()}</p>
         )}
       </button>
 
@@ -172,21 +170,22 @@ const FileUpload = ({
         </div>
       )}
 
-      {file &&
-        (type === "image" ? (
-          <IKImage
-            alt={file.filePath}
-            path={file.filePath}
-            width={500}
-            height={300}
-          />
-        ) : type === "video" ? (
-          <IKVideo
-            path={file.filePath}
-            controls={true}
-            className="h-96 w-full rounded-xl"
-          />
-        ) : null)}
+      {fileUrl && (
+        <div className="mt-4 w-full max-w-xs">
+          {type === 'image' && !fileUrl.endsWith('.pdf') ? (
+            <IKImage src={fileUrl} width={200} className="rounded-md object-cover" />
+          ) : type === 'video' ? (
+            <IKVideo src={fileUrl} width="200" controls className="rounded-md" />
+          ) : fileUrl.endsWith('.pdf') ? (
+            <div className="flex items-center p-2 rounded-md bg-gray-100 dark:bg-dark-400">
+              <Image src="/icons/pdf.svg" width={32} height={32} alt="PDF icon" />
+              <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="ml-2 text-sm truncate text-blue-500 hover:underline">
+                {fileUrl.split('/').pop()}
+              </a>
+            </div>
+          ) : null}
+        </div>
+      )}
     </ImageKitProvider>
   );
 };
