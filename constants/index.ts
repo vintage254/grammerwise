@@ -1,16 +1,4 @@
-export const navigationLinks = [
-  {
-    href: "/library",
-    label: "Library",
-  },
 
-  {
-    img: "/icons/user.svg",
-    selectedImg: "/icons/user-fill.svg",
-    href: "/my-profile",
-    label: "My Profile",
-  },
-];
 
 export const adminSideBarLinks = [
   {
@@ -24,12 +12,12 @@ export const adminSideBarLinks = [
     text: "All Users",
   },
   {
-    img: "/icons/admin/book.svg", // Consider changing this icon
+    img: "/icons/admin/briefcase.svg",
     route: "/admin/jobs",
     text: "All Jobs",
   },
   {
-    img: "/icons/admin/bookmark.svg", // Consider changing this icon
+    img: "/icons/admin/file-text.svg",
     route: "/admin/applications",
     text: "Job Applications",
   },
