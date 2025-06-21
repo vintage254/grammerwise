@@ -31,6 +31,7 @@ const Sidebar = ({ session }: { session: Session }) => {
                 pathname.includes(link.route) &&
                 link.route.length > 1) ||
               pathname === link.route;
+            const Icon = link.icon;
 
             return (
               <Link href={link.route} key={link.route}>
@@ -40,15 +41,12 @@ const Sidebar = ({ session }: { session: Session }) => {
                     isSelected && "bg-primary-admin shadow-sm",
                   )}
                 >
-                  <div className="relative size-5">
-                    <Image
-                      src={link.img}
-                      alt="icon"
-                      fill
-                      className={`${isSelected ? "brightness-0 invert" : ""}  object-contain`}
-                    />
-                  </div>
-
+                  <Icon
+                    className={cn(
+                      "size-5",
+                      isSelected ? "text-white" : "text-dark-400",
+                    )}
+                  />
                   <p className={cn(isSelected ? "text-white" : "text-dark")}>
                     {link.text}
                   </p>

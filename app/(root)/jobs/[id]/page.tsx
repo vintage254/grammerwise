@@ -11,6 +11,10 @@ const JobDetailPage = async ({ params }: { params: { id: string } }) => {
   const { id } = params;
   const session = await auth();
 
+  if (session?.user?.status !== 'APPROVED') {
+    redirect('/?unverified=true');
+  }
+
   const [job] = await db.select().from(jobs).where(eq(jobs.id, id)).limit(1);
 
   if (!job) {

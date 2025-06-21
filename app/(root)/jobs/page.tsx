@@ -8,6 +8,7 @@ import { jobs as jobsTable, bids as bidsTable, Job } from "@/database/schema";
 import redis from '@/database/redis';
 import { and, desc, gte, lte, sql, eq, notInArray } from "drizzle-orm";
 import { auth } from "@/auth";
+import { redirect } from 'next/navigation';
 
 interface JobsPageProps {
   searchParams: {
@@ -19,6 +20,10 @@ interface JobsPageProps {
 
 const JobsPage = async ({ searchParams }: JobsPageProps) => {
   const session = await auth();
+
+  if (session?.user?.status !== 'APPROVED') {
+    redirect('/?unverified=true');
+  }
   const userId = session?.user?.id;
 
   const budget = searchParams.budget || 'any';

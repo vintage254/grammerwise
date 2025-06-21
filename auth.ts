@@ -36,6 +36,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           email: user[0].email,
           name: user[0].fullName,
           role: user[0].role,
+          status: user[0].status, // Add status here
         };
       },
     }),
@@ -48,6 +49,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (user) {
         token.id = user.id;
         token.role = (user as any).role;
+        token.status = (user as any).status; // Add status to token
       }
       return token;
     },
@@ -55,6 +57,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (token && session.user) {
         session.user.id = token.id as string;
         (session.user as any).role = token.role;
+        (session.user as any).status = token.status; // Add status to session
       }
       return session;
     },

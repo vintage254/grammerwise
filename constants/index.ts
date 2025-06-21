@@ -1,28 +1,36 @@
 
 
+import {
+  Home,
+  Users,
+  Briefcase,
+  FileText,
+  UserCheck,
+} from "lucide-react";
+
 export const adminSideBarLinks = [
   {
-    img: "/icons/admin/home.svg",
+    icon: Home,
     route: "/admin",
     text: "Home",
   },
   {
-    img: "/icons/admin/users.svg",
+    icon: Users,
     route: "/admin/users",
     text: "All Users",
   },
   {
-    img: "/icons/admin/briefcase.svg",
+    icon: Briefcase,
     route: "/admin/jobs",
     text: "All Jobs",
   },
   {
-    img: "/icons/admin/file-text.svg",
+    icon: FileText,
     route: "/admin/applications",
     text: "Job Applications",
   },
   {
-    img: "/icons/admin/user.svg",
+    icon: UserCheck,
     route: "/admin/account-requests",
     text: "Account Requests",
   },

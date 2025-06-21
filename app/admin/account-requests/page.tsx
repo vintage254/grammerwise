@@ -2,9 +2,7 @@ import { getAllUsers } from "@/lib/actions/user.actions";
 import UsersTable from "@/components/admin/tables/UsersTable";
 
 const VerificationRequestsPage = async () => {
-  const users = await getAllUsers();
-
-  const pendingUsers = users.filter((user) => user.status === "PENDING");
+  const pendingUsers = await getAllUsers({ status: 'PENDING', minCompletion: 66 });
 
   return (
     <section>

@@ -2,7 +2,7 @@
 
 import { db } from "@/database/drizzle";
 import { users, bids, type User } from "@/database/schema";
-import { and, count, eq } from "drizzle-orm";
+import { and, count, eq, gte } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 type ProgressStatus = 'Not Started' | 'In Progress' | 'Submitted' | 'Under Review' | 'Approved' | 'Rejected' | 'Complete' | 'Available' | 'Not Available';
@@ -101,8 +101,26 @@ export const updateUser = async ({ userId, values }: UpdateUserParams) => {
   }
 };
 
-export const getAllUsers = async () => {
+interface GetAllUsersParams {
+  status?: User['status'];
+  minCompletion?: number;
+}
+
+export const getAllUsers = async (params?: GetAllUsersParams) => {
   try {
+    const conditions = [];
+    if (params?.status) {
+      conditions.push(eq(users.status, params.status));
+    }
+    if (typeof params?.minCompletion === 'number') {
+      conditions.push(gte(users.profileCompletionPercentage, params.minCompletion));
+    }
+
+    if (conditions.length > 0) {
+      const query = db.select().from(users).where(and(...conditions));
+      return await query;
+    }
+
     const allUsers = await db.select().from(users);
     return allUsers;
   } catch (error) {
