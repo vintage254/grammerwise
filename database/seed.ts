@@ -1,6 +1,5 @@
-import dummyBooks from "../dummybooks.json";
-import ImageKit from "imagekit";
-import { books } from "@/database/schema";
+import dummyJobsData from "../dummybooks.json";
+import { jobs } from "@/database/schema";
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
 import { config } from "dotenv";
@@ -8,60 +7,57 @@ import { config } from "dotenv";
 config({ path: ".env.local" });
 
 const sql = neon(process.env.DATABASE_URL!);
-export const db = drizzle({ client: sql });
+const db = drizzle(sql);
 
-const imagekit = new ImageKit({
-  publicKey: process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY!,
-  urlEndpoint: process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT!,
-  privateKey: process.env.IMAGEKIT_PRIVATE_KEY!,
-});
+/**
+ * --- Seed Script for Jobs ---
+ * 
+ * This script seeds the database with job postings.
+ * It reads from `dummybooks.json` (a legacy file name).
+ * 
+ * IMPORTANT: The user must update `dummybooks.json` to contain an array of job objects
+ * that match the 'jobs' schema in `database/schema.ts`.
+ * 
+ * To run this script, execute `npm run seed` in your terminal.
+ */
 
-const uploadToImageKit = async (
-  url: string,
-  fileName: string,
-  folder: string,
-) => {
-  try {
-    const response = await imagekit.upload({
-      file: url,
-      fileName,
-      folder,
-    });
-
-    return response.filePath;
-  } catch (error) {
-    console.error("Error uploading image to ImageKit:", error);
-  }
-};
+const dummyJobs: any[] = dummyJobsData;
 
 const seed = async () => {
-  console.log("Seeding data...");
+  console.log("--- Starting Job Seeding Script ---");
+
+  if (!dummyJobs || dummyJobs.length === 0) {
+    console.log("No job data found in dummybooks.json. Exiting.");
+    return;
+  }
 
   try {
-    for (const book of dummyBooks) {
-      const coverUrl = (await uploadToImageKit(
-        book.coverUrl,
-        `${book.title}.jpg`,
-        "/books/covers",
-      )) as string;
+    // 1. Clear existing jobs to prevent duplicates.
+    console.log("🗑️ Deleting existing jobs...");
+    await db.delete(jobs);
+    console.log("✅ Existing jobs deleted.");
+    
+    // 2. Prepare and insert new jobs from the JSON file.
+    console.log(`🌱 Seeding ${dummyJobs.length} new jobs...`);
+    const jobsToInsert = dummyJobs.map((job) => {
+      // Omit the 'id' field to let the database auto-generate it.
+      // Also, convert date strings to Date objects for Drizzle.
+      const { id, ...jobData } = job;
+      return {
+        ...jobData,
+        createdAt: new Date(job.createdAt),
+        updatedAt: new Date(job.updatedAt),
+      };
+    });
 
-      const videoUrl = (await uploadToImageKit(
-        book.videoUrl,
-        `${book.title}.mp4`,
-        "/books/videos",
-      )) as string;
+    await db.insert(jobs).values(jobsToInsert);
 
-      await db.insert(books).values({
-        ...book,
-        coverUrl,
-        videoUrl,
-      });
-    }
-
-    console.log("Data seeded successfully!");
+    console.log("🎉 Jobs data seeded successfully!");
   } catch (error) {
-    console.error("Error seeding data:", error);
+    console.error("❌ Error seeding jobs data:", error);
   }
+
+  console.log("--- Job Seeding Script Finished ---");
 };
 
 seed();
