@@ -4,6 +4,7 @@ import { db } from "@/database/drizzle";
 import { jobs, tutorApplications } from "@/database/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { Job } from "@/lib/types";
 
 interface CreateJobParams {
   title: string;
@@ -15,6 +16,17 @@ interface CreateJobParams {
 }
 
 // Action to create a new job posting
+// Action to get all job postings
+export const getJobs = async (): Promise<{ success: true; data: Job[] } | { success: false; message: string; data?: undefined }> => {
+  try {
+    const allJobs = await db.select().from(jobs);
+        return { success: true, data: allJobs as Job[] };
+  } catch (error) {
+    console.error("Error fetching jobs:", error);
+    return { success: false, message: "Failed to fetch jobs." };
+  }
+};
+
 export const createJob = async (params: CreateJobParams) => {
   try {
     const newJob = await db.insert(jobs).values(params).returning();
