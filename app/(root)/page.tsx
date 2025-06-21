@@ -1,7 +1,5 @@
 import ProfileCard from "@/components/profile/ProfileCard";
-import ProfileSetupForm from "@/components/ProfileSetupForm";
-import VerificationForm from "@/components/VerificationForm";
-import PayoutForm from "@/components/PayoutForm";
+import ProfileCompletionCard from "@/components/profile/ProfileCompletionCard";
 import { auth } from "@/auth";
 import { db } from "@/database/drizzle";
 import { users, jobs } from "@/database/schema";
@@ -30,29 +28,68 @@ const Home = async () => {
     return <p>Could not load user profile. Please try again later.</p>;
   }
 
-  const { profileCompletionPercentage, workflowStatus } = userProfile;
+  const completionPercentage = userProfile.profileCompletionPercentage ?? 0;
+  const userStatus = userProfile.status;
 
-  const renderFormOrJobList = () => {
-    if (profileCompletionPercentage < 33) {
-      return <ProfileSetupForm user={userProfile} />;
-    }
-    if (profileCompletionPercentage < 66) {
-      return <VerificationForm user={userProfile} />;
-    }
-    if (profileCompletionPercentage < 100 && workflowStatus === 'approved') {
-      return <PayoutForm user={userProfile} />;
-    }
-    // If profile is complete or waiting for approval, show the job list
-    return <JobList title="Available Jobs" jobs={allJobs} />;
+  // Prepare props for ProfileCard
+  const user = {
+    name: userProfile.fullName,
+    role: userProfile.role ?? 'USER',
+    profilePictureUrl: userProfile.profilePictureUrl ?? '/images/default-avatar.png',
   };
 
+  const stats = {
+    worksDone: userProfile.works_done ?? 0,
+    avgRating: userProfile.avg_rating ?? 0,
+    reviewsCount: userProfile.reviews_count ?? 0,
+  };
+
+  type VerificationStatus = 'complete' | 'pending' | 'incomplete';
+
+  const getVerificationStatus = (): VerificationStatus => {
+    if (userStatus === 'APPROVED') return 'complete';
+    if (userStatus === 'PENDING') return 'pending';
+    return 'incomplete';
+  };
+
+  const progress = {
+    completionPercentage: completionPercentage,
+    isBasicInfoComplete: completionPercentage >= 33,
+    isVerified: getVerificationStatus(),
+    isPaymentSetup: completionPercentage >= 100,
+  };
+
+  // Determine which form to show initially.
+  let initialStep: 'profile' | 'verification' | 'payout' = 'profile';
+  if (!progress.isBasicInfoComplete) {
+    initialStep = 'profile';
+  } else if (progress.isVerified !== 'complete') {
+    initialStep = 'verification';
+  } else if (!progress.isPaymentSetup) {
+    initialStep = 'payout';
+  }
+
   return (
-    <main className="my-10 px-2 md:px-5 space-y-12">
-      <ProfileCard />
-      <div className="mt-8">
-        {renderFormOrJobList()}
+    <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-x-8 gap-y-12">
+        {/* Profile Card (60%) */}
+        <div className="lg:col-span-3">
+          <ProfileCard user={user} stats={stats} progress={progress} />
+        </div>
+
+        {/* Completion Card (40%) */}
+        <div className="lg:col-span-2">
+          <div className="lg:sticky lg:top-8">
+            <ProfileCompletionCard user={userProfile} initialStep={initialStep} progress={progress} />
+          </div>
+        </div>
+
+        {/* Job List (Full Width) */}
+        <div className="lg:col-span-5">
+          <JobList title="Available Jobs" jobs={allJobs} />
+        </div>
       </div>
-    </main>
+    </div>
   );
 };
 

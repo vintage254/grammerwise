@@ -7,6 +7,7 @@ import { useRef, useState } from "react";
 import Image from "next/image";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { UploadCloud, FileText, X } from 'lucide-react';
 
 const {
   env: {
@@ -46,6 +47,23 @@ interface Props {
   value?: string;
 }
 
+const truncateFileName = (fileName: string | undefined, startLen = 10, endLen = 10): string => {
+  if (!fileName) return '';
+  const dotIndex = fileName.lastIndexOf('.');
+  if (dotIndex === -1) { // No extension
+    if (fileName.length > startLen + endLen + 3) {
+      return `${fileName.substring(0, startLen)}...${fileName.substring(fileName.length - endLen)}`;
+    }
+    return fileName;
+  }
+  const name = fileName.slice(0, dotIndex);
+  const extension = fileName.slice(dotIndex);
+  if (name.length > startLen + endLen + 3) {
+    return `${name.substring(0, startLen)}...${name.substring(name.length - endLen)}${extension}`;
+  }
+  return fileName;
+};
+
 const FileUpload = ({
   type,
   accept,
@@ -57,6 +75,13 @@ const FileUpload = ({
 }: Props) => {
   const ikUploadRef = useRef(null);
   const [fileUrl, setFileUrl] = useState<string | null>(value ?? null);
+
+  const handleRemoveFile = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setFileUrl(null);
+    onFileChange("");
+  };
   const [progress, setProgress] = useState(0);
 
   const styles = {
@@ -136,31 +161,21 @@ const FileUpload = ({
         className="hidden"
       />
 
-      <button
-        className={cn("upload-btn", styles.button)}
-        onClick={(e) => {
-          e.preventDefault();
-
-          if (ikUploadRef.current) {
-            // @ts-ignore
-            ikUploadRef.current?.click();
-          }
-        }}
-      >
-        <Image
-          src="/icons/upload.svg"
-          alt="upload-icon"
-          width={20}
-          height={20}
-          className="object-contain"
-        />
-
-        <p className={cn("text-base", styles.placeholder)}>{placeholder}</p>
-
-        {fileUrl && (
-          <p className={cn("upload-filename", styles.text)}>{fileUrl.split('/').pop()}</p>
-        )}
-      </button>
+      {!fileUrl && (
+        <button
+          className={cn("upload-btn", styles.button)}
+          onClick={(e) => {
+            e.preventDefault();
+            if (ikUploadRef.current) {
+              // @ts-ignore
+              ikUploadRef.current?.click();
+            }
+          }}
+        >
+          <UploadCloud className="mr-2" />
+          <p className={cn("text-base", styles.placeholder)}>{placeholder}</p>
+        </button>
+      )}
 
       {progress > 0 && progress !== 100 && (
         <div className="w-full rounded-full bg-green-200">
@@ -173,15 +188,26 @@ const FileUpload = ({
       {fileUrl && (
         <div className="mt-4 w-full max-w-xs">
           {type === 'image' && !fileUrl.endsWith('.pdf') ? (
-            <IKImage src={fileUrl} width={200} className="rounded-md object-cover" />
+            <IKImage src={fileUrl} alt="Uploaded image preview" width={200} className="rounded-md object-cover" />
           ) : type === 'video' ? (
             <IKVideo src={fileUrl} width="200" controls className="rounded-md" />
           ) : fileUrl.endsWith('.pdf') ? (
-            <div className="flex items-center p-2 rounded-md bg-gray-100 dark:bg-dark-400">
-              <Image src="/icons/pdf.svg" width={32} height={32} alt="PDF icon" />
-              <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="ml-2 text-sm truncate text-blue-500 hover:underline">
-                {fileUrl.split('/').pop()}
-              </a>
+            <div className="flex items-center justify-between p-2 rounded-md bg-gray-100 dark:bg-dark-400">
+              <div className="flex items-center">
+                <FileText className="mr-2 h-8 w-8 text-blue-500" />
+                                <a 
+                  href={fileUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  title={fileUrl.split('/').pop()}
+                  className="ml-2 text-sm text-blue-500 hover:underline"
+                >
+                  {truncateFileName(fileUrl.split('/').pop())}
+                </a>
+              </div>
+              <button onClick={handleRemoveFile} className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-dark-300">
+                <X size={16} />
+              </button>
             </div>
           ) : null}
         </div>

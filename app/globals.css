@@ -281,6 +281,14 @@
   .library-title {
     @apply mt-2 text-3xl font-semibold text-white xs:text-5xl;
   }
+
+  .glass-card {
+    @apply bg-white/20 backdrop-blur-sm border border-white/30;
+  }
+  
+  .glass-card-dark {
+    @apply dark:bg-dark-200/20 dark:border-dark-100/30;
+  }
 }
 
 @layer base {

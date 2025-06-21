@@ -53,6 +53,11 @@ export const users = pgTable("users", {
   profileCompletionPercentage: integer("profile_completion_percentage").default(0),
   stripeAccountId: text("stripe_account_id"),
 
+  // Tutor Stats
+  works_done: integer("works_done").default(0),
+  avg_rating: integer("avg_rating").default(0),
+  reviews_count: integer("reviews_count").default(0),
+
   // Upstash Workflow Tracking
   workflow_status: text("workflow_status").default('pending'),
   last_email_sent: timestamp("last_email_sent", { withTimezone: true }),

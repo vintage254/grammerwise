@@ -1,73 +1,61 @@
-import { CheckCircle2, Circle, CircleDot, Clock, XCircle } from 'lucide-react';
-
-type ProgressStatus = 'Not Started' | 'In Progress' | 'Submitted' | 'Under Review' | 'Approved' | 'Rejected' | 'Complete' | 'Available' | 'Not Available';
+import { Check, Clock, CreditCard } from 'lucide-react';
 
 interface ProfileProgressProps {
   progress: {
-    step1: ProgressStatus;
-    step2: ProgressStatus;
-    step3: ProgressStatus;
+    isBasicInfoComplete: boolean;
+    isVerified: 'complete' | 'pending' | 'incomplete';
+    isPaymentSetup: boolean;
   };
 }
 
-const Step = ({ name, status }: { name: string; status: ProgressStatus }) => {
-  const getStatusIcon = () => {
-    switch (status) {
-      case 'Complete':
-      case 'Approved':
-        return <CheckCircle2 className="text-green-500" size={20} />;
-      case 'In Progress':
-      case 'Submitted':
-      case 'Available':
-        return <CircleDot className="text-blue-500" size={20} />;
-      case 'Under Review':
-        return <Clock className="text-yellow-500" size={20} />;
-      case 'Rejected':
-        return <XCircle className="text-red-500" size={20} />;
-      case 'Not Started':
-      case 'Not Available':
-      default:
-        return <Circle className="text-gray-400" size={20} />;
-    }
+const ProgressStep = ({ icon, title, subtitle, status }: { icon: React.ReactNode; title: string; subtitle: string; status: 'Complete' | 'Under Review' | 'Not Available' }) => {
+  const statusStyles = {
+    'Complete': 'text-green-400',
+    'Under Review': 'text-yellow-400',
+    'Not Available': 'text-white/50',
   };
 
-  const getStatusTextColor = () => {
-     switch (status) {
-      case 'Complete':
-      case 'Approved':
-        return "text-green-500";
-      case 'In Progress':
-      case 'Submitted':
-      case 'Available':
-        return "text-blue-500";
-      case 'Under Review':
-        return "text-yellow-500";
-      case 'Rejected':
-        return "text-red-500";
-      case 'Not Started':
-      case 'Not Available':
-      default:
-        return "text-gray-500 dark:text-gray-400";
-    }
-  }
-
   return (
-    <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-dark-300 rounded-lg">
-      <div className="flex items-center gap-3">
-        {getStatusIcon()}
-        <span className="text-gray-800 dark:text-light-200">{name}</span>
+    <div className="flex items-center gap-4 p-3 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20">
+      <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+        {icon}
       </div>
-      <span className={`font-medium ${getStatusTextColor()}`}>{status}</span>
+      <div className="flex-1">
+        <p className="text-white font-medium">{title}</p>
+        <p className="text-white/60 text-sm">{subtitle}</p>
+      </div>
+      <span className={`text-sm font-medium ${statusStyles[status]}`}>{status}</span>
     </div>
   );
 };
 
 const ProfileProgress = ({ progress }: ProfileProgressProps) => {
+  const getVerificationStatus = () => {
+    if (progress.isVerified === 'complete') return 'Complete';
+    if (progress.isVerified === 'pending') return 'Under Review';
+    return 'Not Available';
+  };
+
   return (
     <div className="space-y-3">
-      <Step name="Step 1: Basic Info" status={progress.step1} />
-      <Step name="Step 2: Verification" status={progress.step2} />
-      <Step name="Step 3: Payment Setup" status={progress.step3} />
+      <ProgressStep
+        icon={<Check size={20} className="text-green-400" />}
+        title="Step 1: Basic Info"
+        subtitle="Profile information"
+        status={progress.isBasicInfoComplete ? 'Complete' : 'Not Available'}
+      />
+      <ProgressStep
+        icon={<Clock size={20} className="text-yellow-400" />}
+        title="Step 2: Verification"
+        subtitle="Identity verification"
+        status={getVerificationStatus()}
+      />
+      <ProgressStep
+        icon={<CreditCard size={20} className="text-white/80" />}
+        title="Step 3: Payment Setup"
+        subtitle="Connect your account"
+        status={progress.isPaymentSetup ? 'Complete' : 'Not Available'}
+      />
     </div>
   );
 };

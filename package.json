@@ -10,7 +10,9 @@
     "seed": "npx tsx database/seed.ts",
     "db:generate": "npx drizzle-kit generate",
     "db:migrate": "npx drizzle-kit migrate",
-    "db:studio": "npx drizzle-kit studio"
+    "db:studio": "npx drizzle-kit studio",
+    "db:drop": "npx drizzle-kit drop",
+    "db:push": "npx drizzle-kit push"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
