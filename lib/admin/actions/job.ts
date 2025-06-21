@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/database/drizzle";
-import { jobs, tutorApplications } from "@/database/schema";
+import { jobs, bids } from "@/database/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { Job } from "@/lib/types";
@@ -9,10 +9,10 @@ import { Job } from "@/lib/types";
 interface CreateJobParams {
   title: string;
   description: string;
-  level?: string | null;
-  languageFocus?: string | null;
-  budget?: string | null;
-  isPublished?: boolean | null;
+  level: string;
+  budget: string;
+  deadline: Date;
+  isPublished?: boolean;
 }
 
 // Action to create a new job posting
@@ -27,6 +27,24 @@ export const getJobs = async (): Promise<{ success: true; data: Job[] } | { succ
   }
 };
 
+export const updateJob = async (jobId: string, params: Partial<CreateJobParams>) => {
+  try {
+    const updatedJob = await db
+      .update(jobs)
+      .set(params)
+      .where(eq(jobs.id, jobId))
+      .returning();
+
+    revalidatePath("/admin/jobs");
+    revalidatePath(`/admin/jobs/edit/${jobId}`);
+
+    return { success: true, data: updatedJob[0] };
+  } catch (error) {
+    console.error("Error updating job:", error);
+    return { success: false, message: "Failed to update job." };
+  }
+};
+
 export const createJob = async (params: CreateJobParams) => {
   try {
     const newJob = await db.insert(jobs).values(params).returning();
@@ -38,34 +56,46 @@ export const createJob = async (params: CreateJobParams) => {
   }
 };
 
-// Action to approve a tutor's application
-export const approveApplication = async (applicationId: string) => {
+// Action to approve a tutor's bid
+export const approveBid = async (bidId: string) => {
   try {
     await db
-      .update(tutorApplications)
+      .update(bids)
       .set({ status: "approved" })
-      .where(eq(tutorApplications.id, applicationId));
+      .where(eq(bids.id, bidId));
 
-    revalidatePath("/admin/applications");
+    revalidatePath("/admin/bids");
     return { success: true };
   } catch (error) {
-    console.error("Error approving application:", error);
-    return { success: false, message: "Failed to approve application." };
+    console.error("Error approving bid:", error);
+    return { success: false, message: "Failed to approve bid." };
   }
 };
 
-// Action to reject a tutor's application
-export const rejectApplication = async (applicationId: string) => {
+// Action to reject a tutor's bid
+export const deleteJob = async (jobId: string) => {
   try {
-    await db
-      .update(tutorApplications)
-      .set({ status: "rejected" })
-      .where(eq(tutorApplications.id, applicationId));
+    await db.delete(jobs).where(eq(jobs.id, jobId));
 
-    revalidatePath("/admin/applications");
+    revalidatePath("/admin/jobs");
     return { success: true };
   } catch (error) {
-    console.error("Error rejecting application:", error);
-    return { success: false, message: "Failed to reject application." };
+    console.error("Error deleting job:", error);
+    return { success: false, message: "Failed to delete job." };
+  }
+};
+
+export const rejectBid = async (bidId: string) => {
+  try {
+    await db
+      .update(bids)
+      .set({ status: "rejected" })
+      .where(eq(bids.id, bidId));
+
+    revalidatePath("/admin/bids");
+    return { success: true };
+  } catch (error) {
+    console.error("Error rejecting bid:", error);
+    return { success: false, message: "Failed to reject bid." };
   }
 };

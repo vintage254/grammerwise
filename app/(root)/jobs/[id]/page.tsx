@@ -4,7 +4,7 @@ import { jobs } from "@/database/schema";
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import ApplyButton from "@/components/ApplyButton";
+import BidForm from "@/components/BidForm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const JobDetailPage = async ({ params }: { params: { id: string } }) => {
@@ -25,7 +25,6 @@ const JobDetailPage = async ({ params }: { params: { id: string } }) => {
           <div className="flex items-center space-x-4 text-sm text-muted-foreground">
             <span>Budget: {job.budget}</span>
             <span>Level: {job.level}</span>
-            <span>Language Focus: {job.languageFocus}</span>
           </div>
         </CardHeader>
         <CardContent>
@@ -33,8 +32,14 @@ const JobDetailPage = async ({ params }: { params: { id: string } }) => {
           <div className="prose max-w-none">
             <p>{job.description}</p>
           </div>
-          <div className="mt-8 flex justify-end">
-            {session?.user && <ApplyButton jobId={job.id} />}
+          <div className="mt-8">
+            {session?.user ? (
+              <BidForm jobId={job.id} />
+            ) : (
+              <p className="text-center text-muted-foreground">
+                Please log in to submit a bid.
+              </p>
+            )}
           </div>
         </CardContent>
       </Card>

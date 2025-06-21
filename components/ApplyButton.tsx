@@ -4,7 +4,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { applyForJob } from "@/lib/actions/job.actions";
 import { useSession } from "next-auth/react";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 interface ApplyButtonProps {
   jobId: string;

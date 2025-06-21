@@ -1,8 +1,9 @@
 "use server";
 
 import { db } from "@/database/drizzle";
-import { users, tutorApplications, type User } from "@/database/schema";
+import { users, bids, type User } from "@/database/schema";
 import { and, count, eq } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
 
 type ProgressStatus = 'Not Started' | 'In Progress' | 'Submitted' | 'Under Review' | 'Approved' | 'Rejected' | 'Complete' | 'Available' | 'Not Available';
 
@@ -12,10 +13,10 @@ export async function getUserProfileCardData(userId: string) {
     
     const jobsQuery = db
       .select({ 
-        worksDone: count(tutorApplications.id) 
+        worksDone: count(bids.id) 
       })
-      .from(tutorApplications)
-      .where(and(eq(tutorApplications.tutorId, userId), eq(tutorApplications.status, "approved")));
+      .from(bids)
+      .where(and(eq(bids.tutorId, userId), eq(bids.status, "approved")));
 
     const [userData, jobData] = await Promise.all([userQuery, jobsQuery]);
 
@@ -99,3 +100,39 @@ export const updateUser = async ({ userId, values }: UpdateUserParams) => {
     return { success: false, message: "Could not update user" };
   }
 };
+
+export const getAllUsers = async () => {
+  try {
+    const allUsers = await db.select().from(users);
+    return allUsers;
+  } catch (error) {
+    console.error("Error fetching all users:", error);
+    return [];
+  }
+};
+
+export const approveUser = async (userId: string) => {
+  try {
+    await db
+      .update(users)
+      .set({ status: "APPROVED", workflow_status: "approved" })
+      .where(eq(users.id, userId));
+
+    revalidatePath("/admin/account-requests");
+  } catch (error) {
+    console.error("Error approving user:", error);
+    throw new Error("Could not approve user");
+  }
+};
+
+export const getUserById = async (userId: string) => {
+  try {
+    const user = await db.query.users.findFirst({
+      where: eq(users.id, userId),
+    });
+    return user;
+  } catch (error) {
+    console.error(`Error fetching user by id: ${userId}`, error);
+    return null;
+  }
+};;

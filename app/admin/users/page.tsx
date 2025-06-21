@@ -1,16 +1,12 @@
-import { db } from "@/database/drizzle";
-import { users } from "@/database/schema";
-import UsersTable from "@/lib/admin/UsersTable";
-import { eq } from "drizzle-orm";
+import { getAllUsers } from "@/lib/actions/user.actions";
+import UsersTable from "@/components/admin/tables/UsersTable";
 
 const AdminUsersPage = async () => {
-  const allUsers = await db.query.users.findMany({
-    where: eq(users.role, 'USER'),
-  });
+  const allUsers = await getAllUsers();
 
   return (
     <div className="container mx-auto py-10">
-      <h1 className="text-3xl font-bold mb-6">Tutor Applications</h1>
+      <h1 className="text-3xl font-bold mb-6">All Users</h1>
       <UsersTable users={allUsers} />
     </div>
   );

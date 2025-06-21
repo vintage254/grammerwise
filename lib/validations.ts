@@ -22,7 +22,6 @@ export const jobSchema = z.object({
   title: z.string().trim().min(3, { message: "Title must be at least 3 characters." }),
   description: z.string().trim().min(10, { message: "Description must be at least 10 characters." }),
   level: z.string().optional(),
-  languageFocus: z.string().optional(),
   budget: z.string().optional(),
   isPublished: z.boolean().default(false).optional(),
 });

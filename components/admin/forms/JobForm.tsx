@@ -17,43 +17,59 @@ import { useRouter } from "next/navigation";
 import { jobSchema } from "@/lib/validations";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { createJob } from "@/lib/admin/actions/job";
+import { createJob, updateJob } from "@/lib/admin/actions/job";
 import { toast } from "@/hooks/use-toast";
 import { Job } from "@/lib/types";
 
 
-interface Props extends Partial<Job> {
-  type?: "create" | "update";
+interface Props {
+  job?: Job;
 }
 
-const JobForm = ({ type, ...job }: Props) => {
+const JobForm = ({ job }: Props) => {
   const router = useRouter();
 
   const form = useForm<z.infer<typeof jobSchema>>({
     resolver: zodResolver(jobSchema),
     defaultValues: {
-      title: job.title || "",
-      description: job.description || "",
-      level: job.level || "",
-      languageFocus: job.languageFocus || "",
-      budget: job.budget || "",
+      title: job?.title || "",
+      description: job?.description || "",
+      level: job?.level || "",
+      budget: job?.budget || "",
     },
   });
 
   const onSubmit = async (values: z.infer<typeof jobSchema>) => {
-    const result = await createJob(values);
-
-    if (result.success) {
-      toast({
-        title: "Success",
-        description: "Job created successfully",
-      });
-
-      router.push(`/admin/jobs`);
-    } else {
+    try {
+      if (job) {
+        // Update existing job
+        const result = await updateJob(job.id, values);
+        if (result.success) {
+          toast({
+            title: "Success",
+            description: "Job updated successfully",
+          });
+          router.push(`/admin/jobs`);
+        } else {
+          throw new Error(result.message);
+        }
+      } else {
+        // Create new job
+        const result = await createJob(values as any);
+        if (result.success) {
+          toast({
+            title: "Success",
+            description: "Job created successfully",
+          });
+          router.push(`/admin/jobs`);
+        } else {
+          throw new Error(result.message);
+        }
+      }
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: result.message,
+        description: error.message || "An unexpected error occurred.",
         variant: "destructive",
       });
     }
@@ -122,25 +138,7 @@ const JobForm = ({ type, ...job }: Props) => {
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name={"languageFocus"}
-          render={({ field }) => (
-            <FormItem className="flex flex-col gap-1">
-              <FormLabel className="text-base font-normal text-dark-500">
-                Language Focus
-              </FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="e.g. 'Business English', 'Conversational', 'IELTS Prep'"
-                  {...field}
-                  className="job-form_input"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+
         <FormField
           control={form.control}
           name={"budget"}
@@ -162,7 +160,7 @@ const JobForm = ({ type, ...job }: Props) => {
         />
 
         <Button type="submit" className="job-form_btn text-white bg-blue-600 hover:bg-blue-700">
-          Create Job Posting
+          {job ? 'Update Job' : 'Create Job Posting'}
         </Button>
       </form>
     </Form>

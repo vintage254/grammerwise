@@ -26,7 +26,6 @@ const JobsTable = ({ jobs }: JobsTableProps) => {
         <TableRow>
           <TableHead>Title</TableHead>
           <TableHead>Level</TableHead>
-          <TableHead>Language Focus</TableHead>
           <TableHead>Budget</TableHead>
           <TableHead className="text-right">Actions</TableHead>
         </TableRow>
@@ -36,11 +35,10 @@ const JobsTable = ({ jobs }: JobsTableProps) => {
           <TableRow key={job.id}>
             <TableCell className="font-medium">{job.title}</TableCell>
             <TableCell>{job.level || "N/A"}</TableCell>
-            <TableCell>{job.languageFocus || "N/A"}</TableCell>
             <TableCell>{job.budget || "N/A"}</TableCell>
             <TableCell className="text-right">
               <Button asChild variant="ghost">
-                <Link href={`/admin/jobs/${job.id}`}>Edit</Link>
+                <Link href={`/admin/jobs/edit/${job.id}`}>Edit</Link>
               </Button>
             </TableCell>
           </TableRow>

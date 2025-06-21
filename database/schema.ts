@@ -1,3 +1,4 @@
+import { createId } from "@paralleldrive/cuid2";
 import type { InferSelectModel } from "drizzle-orm";
 import {
   varchar,
@@ -66,43 +67,31 @@ export const users = pgTable("users", {
 });
 
 export const jobs = pgTable("jobs", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  title: text("title").notNull(),
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => createId()),
+  title: varchar("title", { length: 256 }).notNull(),
   description: text("description").notNull(),
-  level: text("level"),
-  languageFocus: text("language_focus"),
-  budget: text("budget"),
-  isPublished: pgBoolean("is_published").default(true),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  level: varchar("level", { length: 256 }).notNull(),
+  budget: varchar("budget", { length: 256 }).notNull(),
+  isPublished: pgBoolean("is_published").default(false).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  deadline: timestamp("deadline", { withTimezone: true }).notNull(),
 });
 
-export const applicationStatus = pgEnum("application_status", ["pending", "approved", "rejected"]);
+export const bidStatus = pgEnum("bid_status", ["pending", "approved", "rejected"]);
 
-export const tutorApplications = pgTable(
-  "tutor_applications",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    jobId: uuid("job_id").notNull(),
-    tutorId: uuid("tutor_id").notNull(),
-    coverLetter: text("cover_letter"),
-    status: applicationStatus("status").default("pending"),
-    createdAt: timestamp("created_at").defaultNow(),
-  },
-  (table) => {
-    return {
-      jobIdFk: foreignKey({
-        columns: [table.jobId],
-        foreignColumns: [jobs.id],
-      }).onDelete("cascade"),
-      tutorIdFk: foreignKey({
-        columns: [table.tutorId],
-        foreignColumns: [users.id],
-      }).onDelete("cascade"),
-    };
-  }
-);
+export const bids = pgTable("bids", {
+  id: text("id").primaryKey().$defaultFn(() => createId()),
+  jobId: text("job_id").notNull().references(() => jobs.id, { onDelete: "cascade" }),
+  tutorId: uuid("tutor_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  proposal: text("proposal").notNull(),
+  status: bidStatus("status").default("pending"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
 
 export type User = InferSelectModel<typeof users>;
 export type Job = InferSelectModel<typeof jobs>;
-export type TutorApplication = InferSelectModel<typeof tutorApplications>;
+export type Bid = InferSelectModel<typeof bids>;

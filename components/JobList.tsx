@@ -2,13 +2,14 @@ import React from 'react';
 import JobCard from '@/components/JobCard';
 import { Job } from '@/database/schema';
 
-interface Props {
-  title: string;
+interface JobListProps {
   jobs: Job[];
+  title: string;
   containerClassName?: string;
+  layout?: 'grid' | 'list';
 }
 
-const JobList = ({ title, jobs, containerClassName }: Props) => {
+const JobList: React.FC<JobListProps> = ({ jobs, title, containerClassName, layout = 'grid' }) => {
   if (!jobs || jobs.length === 0) {
     return (
       <div className="text-center py-10">
@@ -20,7 +21,7 @@ const JobList = ({ title, jobs, containerClassName }: Props) => {
   return (
     <section className={containerClassName}>
       <h2 className="text-3xl font-bold mb-8 text-gray-900 dark:text-white">{title}</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className={layout === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8' : 'flex flex-col gap-6'}>
         {jobs.map((job) => (
           <JobCard key={job.id} {...job} />
         ))}

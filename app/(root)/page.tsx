@@ -3,18 +3,20 @@ import ProfileCompletionCard from "@/components/profile/ProfileCompletionCard";
 import { auth } from "@/auth";
 import { db } from "@/database/drizzle";
 import { users, jobs } from "@/database/schema";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import JobList from "@/components/JobList";
+import CompactHero from '@/components/CompactHero';
 
 const Home = async () => {
   const session = await auth();
-  const allJobs = await db.select().from(jobs).where(eq(jobs.isPublished, true));
+  const recentJobs = await db.select().from(jobs).where(eq(jobs.isPublished, true)).orderBy(desc(jobs.createdAt)).limit(3);
 
-  // For guests, show the job list
+  // For guests, show the hero and job list
   if (!session?.user?.id) {
     return (
-      <main className="my-10 px-2 md:px-5">
-        <JobList title="Available Jobs" jobs={allJobs} />
+      <main className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <CompactHero />
+        <JobList title="Recent Jobs" jobs={recentJobs} layout="list" />
       </main>
     );
   }
@@ -70,24 +72,25 @@ const Home = async () => {
   }
 
   return (
-    <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
+      {/* --- Profile Cards Section --- */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-x-8 gap-y-12">
-        {/* Profile Card (60%) */}
         <div className="lg:col-span-3">
           <ProfileCard user={user} stats={stats} progress={progress} />
         </div>
-
-        {/* Completion Card (40%) */}
         <div className="lg:col-span-2">
           <div className="lg:sticky lg:top-8">
             <ProfileCompletionCard user={userProfile} initialStep={initialStep} progress={progress} />
           </div>
         </div>
+      </div>
 
-        {/* Job List (Full Width) */}
-        <div className="lg:col-span-5">
-          <JobList title="Available Jobs" jobs={allJobs} />
-        </div>
+      {/* --- Compact Hero Section --- */}
+      <CompactHero />
+
+      {/* --- Job Listing Section --- */}
+      <div>
+        <JobList title="Recent Jobs" jobs={recentJobs} layout="list" />
       </div>
     </div>
   );

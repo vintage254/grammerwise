@@ -5,15 +5,15 @@ import { Button } from "@/components/ui/button";
 
 const Header = () => {
   return (
-    <header className="my-10 flex justify-between gap-5">
+    <header className="flex justify-between items-center gap-5 border-b border-gray-200/20 pb-4">
       <Link href="/">
-        <Image src="/icons/logo.png" alt="logo" width={160} height={160} />
+        <Image src="/icons/logo.png" alt="logo" width={130} height={30} />
       </Link>
 
       <ul className="flex flex-row items-center gap-8">
         <li>
           <form action={signOutAction}>
-            <Button type="submit">Logout</Button>
+            <Button type="submit" size="sm">Logout</Button>
           </form>
         </li>
       </ul>

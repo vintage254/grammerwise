@@ -47,6 +47,7 @@ const seed = async () => {
         ...jobData,
         createdAt: new Date(job.createdAt),
         updatedAt: new Date(job.updatedAt),
+        deadline: job.deadline ? new Date(job.deadline) : null,
       };
     });
 

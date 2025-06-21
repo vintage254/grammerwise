@@ -1,19 +1,20 @@
 "use server";
 
 import { db } from "@/database/drizzle";
-import { jobs, tutorApplications } from "@/database/schema";
+import { jobs, bids } from "@/database/schema";
 import { and, eq, desc } from "drizzle-orm";
+import { jobs as jobsSchema } from '@/database/schema';
 import { revalidatePath } from "next/cache";
 
 interface ApplyForJobParams {
   jobId: string;
   tutorId: string;
-  coverLetter?: string;
+  proposal: string;
 }
 
 export const applyForJob = async (params: ApplyForJobParams) => {
   try {
-    const { jobId, tutorId, coverLetter } = params;
+    const { jobId, tutorId, proposal } = params;
 
     // Check if the job exists and is published
     const job = await db.query.jobs.findFirst({
@@ -25,18 +26,18 @@ export const applyForJob = async (params: ApplyForJobParams) => {
     }
 
     // Check if the tutor has already applied
-    const existingApplication = await db.query.tutorApplications.findFirst({
-        where: and(eq(tutorApplications.jobId, jobId), eq(tutorApplications.tutorId, tutorId))
+    const existingApplication = await db.query.bids.findFirst({
+        where: and(eq(bids.jobId, jobId), eq(bids.tutorId, tutorId))
     });
 
     if (existingApplication) {
         return { success: false, error: "You have already applied for this job." };
     }
 
-    await db.insert(tutorApplications).values({
+    await db.insert(bids).values({
       jobId,
       tutorId,
-      coverLetter,
+      proposal,
       status: "pending",
     });
 
@@ -49,14 +50,31 @@ export const applyForJob = async (params: ApplyForJobParams) => {
   }
 };
 
+export const getJobById = async (jobId: string) => {
+  try {
+    const job = await db.query.jobs.findFirst({
+      where: eq(jobsSchema.id, jobId),
+    });
+
+    if (!job) {
+      return { success: false, error: "Job not found." };
+    }
+
+    return { success: true, data: job };
+  } catch (error) {
+    console.error("Failed to fetch job:", error);
+    return { success: false, error: "An unexpected error occurred." };
+  }
+};
+
 export const getTutorApplications = async (tutorId: string) => {
     try {
-        const applications = await db.query.tutorApplications.findMany({
-            where: eq(tutorApplications.tutorId, tutorId),
+        const applications = await db.query.bids.findMany({
+            where: eq(bids.tutorId, tutorId),
             with: {
                 job: true, // Include job details with each application
             },
-            orderBy: [desc(tutorApplications.createdAt)],
+            orderBy: [desc(bids.createdAt)],
         });
 
         return { success: true, data: applications };
